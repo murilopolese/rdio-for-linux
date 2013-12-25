@@ -1,4 +1,7 @@
+#!/usr/bin/gjs
+
 const Lang = imports.lang;
+const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const WebKit = imports.gi.WebKit;
 const Soup = imports.gi.Soup;
@@ -27,13 +30,13 @@ const Application = new Lang.Class({
         // Cookies persistance
         let session = WebKit.get_default_session();
         let cookies = new Soup.CookieJarText({
-            filename: './cookies.txt'
+            filename: GLib.get_current_dir() + '/cookies.txt'
         });
         cookies.set_accept_policy(Soup.CookieJarAcceptPolicy.ALWAYS);
         cookies.attach(session);
         // System tray icon
         let tray = new Gtk.StatusIcon();
-        tray.file = './rdio-icon.png';
+        tray.file = GLib.get_current_dir() + '/rdio-icon.png';
         tray.connect('activate', Lang.bind(this, this._toggleWindowVisibility));
 
     },

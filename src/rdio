@@ -42,8 +42,6 @@ const Application = new Lang.Class({
         let tray = new Gtk.StatusIcon();
         tray.file = RDIO_USER_DATA + '/rdio-icon.png';
         tray.connect('activate', Lang.bind(this, this._toggleWindowVisibility));
-
-        print(GLib.get_user_data_dir())
     },
     _onActivate: function() {
         this._window.show_all();
@@ -52,10 +50,11 @@ const Application = new Lang.Class({
         this._buildUI();
     },
     _toggleWindowVisibility: function() {
-        if(this._window.visible) {
+        if(this._window.is_active) {
             this._window.hide();
         } else {
             this._window.show_all();
+            this._window.present();
         }
     }
 });

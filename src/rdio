@@ -24,6 +24,8 @@ const Application = new Lang.Class({
             title: "Rdio" 
         });
         this._window.set_default_size(800, 600);
+        // Prevent window from be destroyed when clicked on close button 
+        this._window.connect('delete-event', Lang.bind(this, this._toggleWindowVisibility));
         // Scrollable container
         let sw = new Gtk.ScrolledWindow({});
         this._window.add(sw);
@@ -42,6 +44,7 @@ const Application = new Lang.Class({
         let tray = new Gtk.StatusIcon();
         tray.file = RDIO_USER_DATA + '/rdio-icon.png';
         tray.connect('activate', Lang.bind(this, this._toggleWindowVisibility));
+
     },
     _onActivate: function() {
         this._window.show_all();
@@ -56,6 +59,7 @@ const Application = new Lang.Class({
             this._window.show_all();
             this._window.present();
         }
+        return true;
     }
 });
 

@@ -6,6 +6,10 @@ const Gtk = imports.gi.Gtk;
 const WebKit = imports.gi.WebKit;
 const Soup = imports.gi.Soup;
 
+// This folder should be created on app install. The expected files are
+// cookies,txt and rdio-icon.png
+const RDIO_USER_DATA = GLib.get_user_data_dir() + '/rdio';
+
 const Application = new Lang.Class({
     Name: 'Application',
     _init: function() {
@@ -30,15 +34,16 @@ const Application = new Lang.Class({
         // Cookies persistance
         let session = WebKit.get_default_session();
         let cookies = new Soup.CookieJarText({
-            filename: GLib.get_current_dir() + '/cookies.txt'
+            filename: RDIO_USER_DATA + '/cookies.txt'
         });
         cookies.set_accept_policy(Soup.CookieJarAcceptPolicy.ALWAYS);
         cookies.attach(session);
         // System tray icon
         let tray = new Gtk.StatusIcon();
-        tray.file = GLib.get_current_dir() + '/rdio-icon.png';
+        tray.file = RDIO_USER_DATA + '/rdio-icon.png';
         tray.connect('activate', Lang.bind(this, this._toggleWindowVisibility));
 
+        print(GLib.get_user_data_dir())
     },
     _onActivate: function() {
         this._window.show_all();

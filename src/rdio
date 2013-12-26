@@ -3,12 +3,14 @@
 const Lang = imports.lang;
 const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
+const Gio = imports.gi.Gio;
 const WebKit = imports.gi.WebKit;
 const Soup = imports.gi.Soup;
 
 // This folder should be created on app install. The expected files are
 // cookies,txt and rdio-icon.png
 const RDIO_USER_DATA = GLib.get_user_data_dir() + '/rdio';
+const RDIO_URI = 'https://rdio.com';
 
 const Application = new Lang.Class({
     Name: 'Application',
@@ -18,21 +20,31 @@ const Application = new Lang.Class({
         this.application.connect('startup', Lang.bind(this, this._onStartup));
     },
     _buildUI: function() {
+        this._createWebView();
+        this._createCookies();
+        this._createStatusIcon();
+        this._createMenus();
+    },
+    _createWebView: function() {
         // Application main window
         this._window = new Gtk.ApplicationWindow({ 
             application: this.application,
+            window_position: Gtk.WindowPosition.CENTER,
             title: "Rdio" 
         });
         this._window.set_default_size(800, 600);
         // Prevent window from be destroyed when clicked on close button 
-        this._window.connect('delete-event', Lang.bind(this, this._toggleWindowVisibility));
+        this._window.connect('delete-event', 
+            Lang.bind(this, this._toggleWindowVisibility));
         // Scrollable container
         let sw = new Gtk.ScrolledWindow({});
         this._window.add(sw);
         // Web view
         let view = new WebKit.WebView();
-        view.load_uri('https://rdio.com');
+        view.load_uri(RDIO_URI);
         sw.add(view);
+    },
+    _createCookies: function() {
         // Cookies persistance
         let session = WebKit.get_default_session();
         let cookies = new Soup.CookieJarText({
@@ -40,11 +52,30 @@ const Application = new Lang.Class({
         });
         cookies.set_accept_policy(Soup.CookieJarAcceptPolicy.ALWAYS);
         cookies.attach(session);
+    },
+    _createStatusIcon: function() {
         // System tray icon
         let tray = new Gtk.StatusIcon();
         tray.file = RDIO_USER_DATA + '/rdio-icon.png';
         tray.connect('activate', Lang.bind(this, this._toggleWindowVisibility));
+        this.tray = tray;
+    },
+    _createMenus: function() {
+        let menu = new Gio.Menu();
+        menu.append('Hide', 'app.hide');
+        menu.append('Quit', 'app.quit');
+        this.application.set_app_menu(menu);
 
+        let hideAction = new Gio.SimpleAction({name: 'hide'});
+        let quitAction = new Gio.SimpleAction({name: 'quit'});
+
+        hideAction.connect('activate', 
+            Lang.bind(this._window, this._window.hide));
+        quitAction.connect('activate', 
+            Lang.bind(this._window, this._window.destroy));
+
+        this.application.add_action(hideAction);
+        this.application.add_action(quitAction);
     },
     _onActivate: function() {
         this._window.show_all();

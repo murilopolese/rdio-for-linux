@@ -3,6 +3,7 @@
 const Lang = imports.lang;
 const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
+const Gdk = imports.gi.Gdk;
 const Gio = imports.gi.Gio;
 const WebKit = imports.gi.WebKit;
 const Soup = imports.gi.Soup;
@@ -20,12 +21,14 @@ const Application = new Lang.Class({
         this.application.connect('startup', Lang.bind(this, this._onStartup));
     },
     _buildUI: function() {
+        this._createWindow();
+        this._bindAccelerators();
         this._createWebView();
         this._createCookies();
         this._createStatusIcon();
         this._createMenus();
     },
-    _createWebView: function() {
+    _createWindow: function() {
         // Application main window
         this._window = new Gtk.ApplicationWindow({ 
             application: this.application,
@@ -36,13 +39,44 @@ const Application = new Lang.Class({
         // Prevent window from be destroyed when clicked on close button 
         this._window.connect('delete-event', 
             Lang.bind(this, this._toggleWindowVisibility));
+    },
+    _createWebView: function() {
         // Scrollable container
         let sw = new Gtk.ScrolledWindow({});
         this._window.add(sw);
         // Web view
-        let view = new WebKit.WebView();
-        view.load_uri(RDIO_URI);
-        sw.add(view);
+        this._webView = new WebKit.WebView();
+        this._webView.load_uri(RDIO_URI);
+        sw.add(this._webView);
+    },
+    _bindAccelerators: function() {
+        let pauseAction = new Gio.SimpleAction({name: 'pause'});
+        let nextAction = new Gio.SimpleAction({name: 'next'});
+        let prevAction = new Gio.SimpleAction({name: 'prev'});
+
+        pauseAction.connect('activate', Lang.bind(this, function() {
+            this._eventDispatcher('.play_pause');
+        }));
+        nextAction.connect('activate', Lang.bind(this, function() {
+            this._eventDispatcher('.next');
+        }));
+        prevAction.connect('activate', Lang.bind(this, function() {
+            this._eventDispatcher('.prev');
+        }));
+
+        this.application.add_action(pauseAction);
+        this.application.add_action(nextAction);
+        this.application.add_action(prevAction);
+
+        this.application.add_accelerator('<alt>x', 'app.pause', null);
+        this.application.add_accelerator('<alt>c', 'app.next', null);
+        this.application.add_accelerator('<alt>z', 'app.prev', null);
+    },
+    _eventDispatcher: function(selector) {
+        let js ="var evt = document.createEvent('MouseEvents');"
+        js +="evt.initMouseEvent('click', true, false,  document, 0, 0, 0, 0, 0, false, false, false, false, 0, null);"
+        js +="document.querySelector('"+selector+"').dispatchEvent(evt);"
+        this._webView.execute_script(js);
     },
     _createCookies: function() {
         // Cookies persistance
@@ -64,6 +98,7 @@ const Application = new Lang.Class({
         let menu = new Gio.Menu();
         menu.append('Hide', 'app.hide');
         menu.append('Quit', 'app.quit');
+        menu.append('Pause', 'app.pause');
         this.application.set_app_menu(menu);
 
         let hideAction = new Gio.SimpleAction({name: 'hide'});
@@ -77,12 +112,6 @@ const Application = new Lang.Class({
         this.application.add_action(hideAction);
         this.application.add_action(quitAction);
     },
-    _onActivate: function() {
-        this._window.show_all();
-    },
-    _onStartup: function() {
-        this._buildUI();
-    },
     _toggleWindowVisibility: function() {
         if(this._window.is_active) {
             this._window.hide();
@@ -91,7 +120,13 @@ const Application = new Lang.Class({
             this._window.present();
         }
         return true;
-    }
+    },
+    _onActivate: function() {
+        this._window.show_all();
+    },
+    _onStartup: function() {
+        this._buildUI();
+    },
 });
 
 //run the application

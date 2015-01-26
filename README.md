@@ -2,9 +2,11 @@
 
 ## Features
 
+- Login persistence
+
 ## Roadmap
 
-- Login persistence
+- Login with Facebook
 - Hide on tray
 - Media buttons shortcuts
 - System notification

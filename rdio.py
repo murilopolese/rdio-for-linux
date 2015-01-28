@@ -32,7 +32,7 @@ class Rdio(Gtk.Window):
 		self.webview = WebKit.WebView()
 		# Set Rdio url as webview initial location
 		url = "https://rdio.com/"
-		# self.webview.load_uri(url)
+		self.webview.load_uri(url)
 		# Add webview to scrolled window
 		self.scrolled.add(self.webview)
 		# Add scrolled to main window

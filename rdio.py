@@ -1,17 +1,54 @@
 #!/usr/bin/python
 
-from gi.repository import Gtk
+from gi.repository import Gtk, Gdk, Gio
 from gi.repository import WebKit
 from gi.repository import Soup
 from datetime import datetime
 import urllib2
 import os, sys
 
+style_provider = Gtk.CssProvider()
+css = """
+.header-bar .subtitle {
+  opacity: 0.55;
+  text-shadow: none; 
+ }
+ 
+#RdioApp,
+#RdioApp .header-bar,
+#RdioApp .header-bar:backdrop,
+#RdioApp .header-bar .button {
+	background: #fff;
+	color: #32393d;
+	border: none;
+	text-shadow: none;
+    icon-shadow: none;
+    box-shadow: none;
+}
+#RdioApp .header-bar .button:hover {
+	color: #32393d;
+	background: #eee;
+}
+
+"""
+style_provider.load_from_data(css)
+Gtk.StyleContext.add_provider_for_screen(
+	Gdk.Screen.get_default(), 
+	style_provider,
+	Gtk.STYLE_PROVIDER_PRIORITY_APPLICATION
+)
+
 class Rdio(Gtk.Window):
 	def __init__(self):
 		Gtk.Window.__init__(self, title="Rdio")
+		self.set_name("RdioApp")
 		# Initial windows size
 		self.set_size_request(1024,600)
+		hb = Gtk.HeaderBar()
+		hb.set_name("HeaderBar")
+		hb.props.title = "Rdio"
+		hb.set_show_close_button(True)
+		self.set_titlebar(hb)
 
 		self.create_app_dir()
 		self.build_ui()

@@ -44,11 +44,6 @@ class Rdio(Gtk.Window):
 		self.set_name("RdioApp")
 		# Initial windows size
 		self.set_size_request(1024,600)
-		hb = Gtk.HeaderBar()
-		hb.set_name("HeaderBar")
-		hb.props.title = "Rdio"
-		hb.set_show_close_button(True)
-		self.set_titlebar(hb)
 
 		self.create_app_dir()
 		self.build_ui()
@@ -64,15 +59,24 @@ class Rdio(Gtk.Window):
 			os.makedirs(self.user_data_dir)	
 
 	def build_ui(self):
-		if self.test_connection() == False:
-			self.offline_mode()
-		else:
+			# Setip the Header Bar
+			hb = Gtk.HeaderBar()
+			hb.set_name("HeaderBar")
+			hb.props.title = "Rdio"
+			hb.set_show_close_button(True)
+			self.set_titlebar(hb)
 			# Create a scrolled window to wrap the webview
 			self.scrolled = Gtk.ScrolledWindow()
 			# Create the webview
 			self.webview = WebKit.WebView()
+			# Listen for requests on navigation
+			self.webview.connect("navigation-requested", self.on_navigation_requested)
 			# Set Rdio url as webview initial location
-			url = "https://rdio.com/"
+			if self.test_connection() == False:
+				url = 'file://' + self.current_folder + "/resources/noconnection.html"
+			else:
+				url = "https://rdio.com/"
+			print(url)
 			self.webview.load_uri(url)
 			# Add webview to scrolled window
 			self.scrolled.add(self.webview)
@@ -135,6 +139,14 @@ class Rdio(Gtk.Window):
 
 	def offline_mode(self):
 		print("You are offline_mode")
+
+	def on_navigation_requested(self, view, frame, req, data=None):
+		uri = req.get_uri()
+		scheme, path=uri.split(':', 1)
+		if scheme == 'rdio':
+			if self.test_connection() == True :
+				self.webview.load_uri("http://rdio.com")
+			return True
 
 app = Rdio()
 app.connect("delete-event", app.activate)

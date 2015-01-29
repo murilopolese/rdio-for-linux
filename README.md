@@ -4,14 +4,14 @@
 
 - Login persistence
 - Hide on tray
+- Test if it's connected on internet
 
 ## Roadmap
 
+- Install script
 - Login with Facebook
 - Media buttons shortcuts
 - System notification
 - Control on volume context (Gnome shell)
-- Remember previous windows size
 - Customize shortcuts
-- Test if it's connected on internet
-- Install script
+- Remember previous windows size

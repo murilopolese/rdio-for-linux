@@ -4,6 +4,7 @@ from gi.repository import Gtk
 from gi.repository import WebKit
 from gi.repository import Soup
 from datetime import datetime
+import urllib2
 import os, sys
 
 class Rdio(Gtk.Window):
@@ -26,17 +27,20 @@ class Rdio(Gtk.Window):
 			os.makedirs(self.user_data_dir)	
 
 	def build_ui(self):
-		# Create a scrolled window to wrap the webview
-		self.scrolled = Gtk.ScrolledWindow()
-		# Create the webview
-		self.webview = WebKit.WebView()
-		# Set Rdio url as webview initial location
-		url = "https://rdio.com/"
-		self.webview.load_uri(url)
-		# Add webview to scrolled window
-		self.scrolled.add(self.webview)
-		# Add scrolled to main window
-		self.add(self.scrolled)
+		if self.test_connection() == False:
+			self.offline_mode()
+		else:
+			# Create a scrolled window to wrap the webview
+			self.scrolled = Gtk.ScrolledWindow()
+			# Create the webview
+			self.webview = WebKit.WebView()
+			# Set Rdio url as webview initial location
+			url = "https://rdio.com/"
+			self.webview.load_uri(url)
+			# Add webview to scrolled window
+			self.scrolled.add(self.webview)
+			# Add scrolled to main window
+			self.add(self.scrolled)
 
 	def config_ui(self):
 		# Disable context menu
@@ -59,7 +63,6 @@ class Rdio(Gtk.Window):
 	def set_icons(self):
 		self.statusicon.set_from_file(self.current_folder+'/resources/icon-25x25.png')
 		self.set_icon_from_file(self.current_folder+"/resources/icon-96x96.png")
-		
 
 	def activate(self, widget, data=None):
 		if self.visible == True:
@@ -86,6 +89,15 @@ class Rdio(Gtk.Window):
 
 		self.menu.popup(None, None, pos, button, 1, data)
 
+	def test_connection(self):
+		try:
+			response = urllib2.urlopen("http://74.125.228.100", timeout=1)
+			return True
+		except urllib2.URLError as err: pass
+		return False
+
+	def offline_mode(self):
+		print("You are offline_mode")
 
 app = Rdio()
 app.connect("delete-event", app.activate)

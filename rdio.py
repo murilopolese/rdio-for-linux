@@ -14,7 +14,10 @@ css = """
   text-shadow: none; 
  }
  
-#RdioApp,
+#RdioApp {
+	background: #fff;
+	color: #32393d;
+}
 #RdioApp .header-bar,
 #RdioApp .header-bar:backdrop,
 #RdioApp .header-bar .button {
@@ -59,7 +62,7 @@ class Rdio(Gtk.Window):
 			os.makedirs(self.user_data_dir)	
 
 	def build_ui(self):
-			# Setip the Header Bar
+			# Setup GTK3 Header Bar
 			hb = Gtk.HeaderBar()
 			hb.set_name("HeaderBar")
 			hb.props.title = "Rdio"
@@ -69,15 +72,6 @@ class Rdio(Gtk.Window):
 			self.scrolled = Gtk.ScrolledWindow()
 			# Create the webview
 			self.webview = WebKit.WebView()
-			# Listen for requests on navigation
-			self.webview.connect("navigation-requested", self.on_navigation_requested)
-			# Set Rdio url as webview initial location
-			if self.test_connection() == False:
-				url = 'file://' + self.current_folder + "/resources/noconnection.html"
-			else:
-				url = "https://rdio.com/"
-			print(url)
-			self.webview.load_uri(url)
 			# Add webview to scrolled window
 			self.scrolled.add(self.webview)
 			# Add scrolled to main window
@@ -88,16 +82,25 @@ class Rdio(Gtk.Window):
 		settings = self.webview.get_settings()
 		settings.set_property('enable-default-context-menu', False)
 		self.webview.set_settings(settings)
+		# Create a jar to store web cookies
 		uri = self.user_data_dir + '/cookiejar'
 		cookiejar = Soup.CookieJarText.new(uri, False)
 		cookiejar.set_accept_policy(Soup.CookieJarAcceptPolicy.ALWAYS)
 		session = WebKit.get_default_session()
 		session.add_feature(cookiejar)
+		# Listen for requests on navigation
+		self.webview.connect("navigation-requested", self.on_navigation_requested)
+		# If not connected, show a local html
+		if self.test_connection() == False:
+			url = 'file://' + self.current_folder + "/resources/noconnection.html"
+		else:
+			url = "https://rdio.com/"
+		self.webview.load_uri(url)
 
 	def tray(self):
 		self.visible = True;
 		self.statusicon = Gtk.StatusIcon()
-		self.statusicon.connect("activate", self.activate)
+		self.statusicon.connect("activate", self.toggleVisibility)
 		self.statusicon.connect("popup_menu", self.popup)
 		self.statusicon.set_visible(True)
 
@@ -105,7 +108,7 @@ class Rdio(Gtk.Window):
 		self.statusicon.set_from_file(self.current_folder+'/resources/icon-25x25.png')
 		self.set_icon_from_file(self.current_folder+"/resources/icon-96x96.png")
 
-	def activate(self, widget, data=None):
+	def toggleVisibility(self, widget, data=None):
 		if self.visible == True:
 			self.hide()
 			self.visible = False;
@@ -120,9 +123,7 @@ class Rdio(Gtk.Window):
 		quit = Gtk.MenuItem()
 		quit.set_label("Quit")
 		quit.connect("activate", Gtk.main_quit)
-
 		self.menu.append(quit)
-
 		self.menu.show_all()
 
 		def pos(menu, icon):
@@ -137,9 +138,6 @@ class Rdio(Gtk.Window):
 		except urllib2.URLError as err: pass
 		return False
 
-	def offline_mode(self):
-		print("You are offline_mode")
-
 	def on_navigation_requested(self, view, frame, req, data=None):
 		uri = req.get_uri()
 		scheme, path=uri.split(':', 1)
@@ -149,6 +147,6 @@ class Rdio(Gtk.Window):
 			return True
 
 app = Rdio()
-app.connect("delete-event", app.activate)
+app.connect("delete-event", app.toggleVisibility)
 app.show_all()
 Gtk.main()

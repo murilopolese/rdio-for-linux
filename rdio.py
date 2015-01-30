@@ -8,33 +8,11 @@ import urllib2
 import os, sys
 
 style_provider = Gtk.CssProvider()
-css = """
-.header-bar .subtitle {
-  opacity: 0.55;
-  text-shadow: none; 
- }
- 
-#RdioApp {
-	background: #fff;
-	color: #32393d;
-}
-#RdioApp .header-bar,
-#RdioApp .header-bar:backdrop,
-#RdioApp .header-bar .button {
-	background: #fff;
-	color: #32393d;
-	border: none;
-	text-shadow: none;
-    icon-shadow: none;
-    box-shadow: none;
-}
-#RdioApp .header-bar .button:hover {
-	color: #32393d;
-	background: #eee;
-}
+css = open(os.path.dirname(os.path.realpath(__file__))+'/resources/main.css')
+css_data = css.read()
+css.close()
 
-"""
-style_provider.load_from_data(css)
+style_provider.load_from_data(css_data)
 Gtk.StyleContext.add_provider_for_screen(
 	Gdk.Screen.get_default(), 
 	style_provider,
@@ -101,8 +79,21 @@ class Rdio(Gtk.Window):
 		self.visible = True;
 		self.statusicon = Gtk.StatusIcon()
 		self.statusicon.connect("activate", self.toggleVisibility)
-		self.statusicon.connect("popup_menu", self.popup)
+		self.statusicon.connect("popup_menu", self.tray_popup)
 		self.statusicon.set_visible(True)
+
+	def tray_popup(self, button, widget, data=None):
+		self.menu = Gtk.Menu()
+		quit = Gtk.MenuItem()
+		quit.set_label("Quit")
+		quit.connect("activate", Gtk.main_quit)
+		self.menu.append(quit)
+		self.menu.show_all()
+
+		def pos(menu, icon):
+			return (Gtk.StatusIcon.position_menu(menu, icon))
+
+		self.menu.popup(None, None, pos, button, 1, data)
 
 	def set_icons(self):
 		self.statusicon.set_from_file(self.current_folder+'/resources/icon-25x25.png')
@@ -117,19 +108,6 @@ class Rdio(Gtk.Window):
 			self.present()
 			self.visible = True;
 		return True;
-
-	def popup(self, button, widget, data=None):
-		self.menu = Gtk.Menu()
-		quit = Gtk.MenuItem()
-		quit.set_label("Quit")
-		quit.connect("activate", Gtk.main_quit)
-		self.menu.append(quit)
-		self.menu.show_all()
-
-		def pos(menu, icon):
-			return (Gtk.StatusIcon.position_menu(menu, icon))
-
-		self.menu.popup(None, None, pos, button, 1, data)
 
 	def test_connection(self):
 		try:

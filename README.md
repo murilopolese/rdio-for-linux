@@ -8,9 +8,10 @@
 
 ## Roadmap
 
+- Media buttons shortcuts
+- Add media accelerators on GTK3 app menu
 - Install script
 - Login with Facebook
-- Media buttons shortcuts
 - System notification
 - Control on volume context (Gnome shell)
 - Customize shortcuts

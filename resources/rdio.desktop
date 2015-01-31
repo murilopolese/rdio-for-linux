@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Encoding=UTF-8
+Name=Rdio
+Comment=
+Exec=rdio
+Icon=~/.local/share/rdio/icon-96x96.png
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=GNOME;GTK;Music;

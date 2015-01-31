@@ -1,0 +1,23 @@
+.header-bar .subtitle {
+  opacity: 0.55;
+  text-shadow: none; 
+ }
+ 
+#RdioApp {
+	background: #fff;
+	color: #32393d;
+}
+#RdioApp .header-bar,
+#RdioApp .header-bar:backdrop,
+#RdioApp .header-bar .button {
+	background: #fff;
+	color: #32393d;
+	border: none;
+	text-shadow: none;
+    icon-shadow: none;
+    box-shadow: none;
+}
+#RdioApp .header-bar .button:hover {
+	color: #32393d;
+	background: #eee;
+}
